@@ -1,7 +1,7 @@
-import React, { Component } from "./node_modules/react";
+import React from "react";
 import { Text, View } from "react-native";
 
-class Puzzle extends Component {
+export class Puzzle extends React.Component {
   render() {
     return (
       <View>
@@ -10,4 +10,3 @@ class Puzzle extends Component {
     );
   }
 }
-export default Puzzle;

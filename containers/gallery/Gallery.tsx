@@ -8,62 +8,36 @@ import {
   View
 } from "react-native";
 
-import { Provider } from "react-redux";
-import { createStore } from "redux";
-import puzzleReducer from "../../modules/gallery/reducer";
+import { connect } from "react-redux";
+import { IDispatchProps, IProps, IStateProps } from "./types";
+import { IRootReducer } from "../../modules";
 
-const store = createStore(puzzleReducer);
-
-class Main extends React.Component {
-  state = {
-    images: [
-      { img: require("../assets/images/1.jpg") },
-      { img: require("../assets/images/2.jpg") },
-      { img: require("../assets/images/3.jpg") },
-      { img: require("../assets/images/3.jpg") },
-      { img: require("../assets/images/4.jpg") },
-      { img: require("../assets/images/5.jpg") },
-      { img: require("../assets/images/6.jpg") },
-      { img: require("../assets/images/7.jpg") },
-      { img: require("../assets/images/8.jpg") },
-      { img: require("../assets/images/9.jpg") },
-      { img: require("../assets/images/10.jpg") }
-    ]
-  };
-
-  selectImage = image => {};
-
-  componentDidMount() {}
-
+class Gallery extends React.Component<IProps> {
   render() {
     return (
-      <Provider store={store}>
-        <>
-          <FlatList
-            data={this.state.images}
-            keyExtractor={(item, i) => i}
-            style={styles.container}
-            renderItem={({ item, index }) => (
-              <TouchableHighlight
-                style={styles.item}
-                onPress={() => {
-                  this.setState({ selectedImage: item.img });
-                }}
-              >
-                <View>
-                  <Image style={styles.item} source={item.img} />
-                </View>
-              </TouchableHighlight>
-            )}
-            numColumns={3}
-          />
-        </>
-      </Provider>
+      <>
+        <FlatList
+          data={this.props.images}
+          keyExtractor={(buf, i) => i.toString()}
+          style={styles.container}
+          renderItem={({ item, index }) => (
+            <TouchableHighlight style={styles.item} onPress={() => {}}>
+              <View>{item}</View>
+            </TouchableHighlight>
+          )}
+          numColumns={2}
+        />
+      </>
     );
   }
 }
 
-export default Main;
+export const GalleryConnected = connect<IStateProps, IDispatchProps>(
+  (state: IRootReducer) => ({
+    images: state.gallery.images
+  }),
+  dispatch => ({})
+)(Gallery);
 
 const styles = StyleSheet.create({
   container: {
