@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "puzzle game",
-    "slug": "puzzle",
+    "name": "puzzle",
+    "slug": "app",
     "privacy": "public",
     "sdkVersion": "32.0.0",
     "platforms": [
