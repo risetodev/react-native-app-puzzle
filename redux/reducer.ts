@@ -32,7 +32,7 @@ export const INITIAL_STATE: IReducerType = {
 
 export const reducer = reducerWithInitialState(INITIAL_STATE).case(
   actions.onSelectImage,
-  (state: IReducerType, payload: IImage) => ({
+  (state: IReducerType, payload: string) => ({
     ...state,
     selectedImage: payload
   })

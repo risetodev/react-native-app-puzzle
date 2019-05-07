@@ -9,7 +9,8 @@ import {
 
 import { connect } from "react-redux";
 import { IDispatchProps, IProps, IStateProps } from "./types";
-import { IReducerType } from "../../redux";
+import { IReducerType, IImage } from "../../redux";
+import * as actions from "../../redux";
 
 class Gallery extends React.Component<IProps> {
   render() {
@@ -20,7 +21,10 @@ class Gallery extends React.Component<IProps> {
           keyExtractor={(buf, i) => i.toString()}
           style={styles.container}
           renderItem={({ item, index }) => (
-            <TouchableHighlight style={styles.item} onPress={() => {}}>
+            <TouchableHighlight
+              style={styles.item}
+              onPress={() => this.props.onSelectImage(item.source)}
+            >
               <View>{item.imageComponent}</View>
             </TouchableHighlight>
           )}
@@ -35,7 +39,9 @@ export const GalleryConnected = connect<IStateProps, IDispatchProps>(
   (state: IReducerType) => ({
     images: state.images
   }),
-  dispatch => ({})
+  dispatch => ({
+    onSelectImage: (image: string) => dispatch(actions.onSelectImage(image))
+  })
 )(Gallery);
 
 const styles = StyleSheet.create({

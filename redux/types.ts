@@ -2,7 +2,7 @@ import React from "react";
 
 export interface IReducerType {
   images: IImage[];
-  selectedImage: React.ReactNode;
+  selectedImage: string;
 }
 
 export interface IImage {
