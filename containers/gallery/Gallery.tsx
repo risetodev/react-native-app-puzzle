@@ -3,14 +3,13 @@ import {
   StyleSheet,
   FlatList,
   Dimensions,
-  Image,
   TouchableHighlight,
   View
 } from "react-native";
 
 import { connect } from "react-redux";
 import { IDispatchProps, IProps, IStateProps } from "./types";
-import { IRootReducer } from "../../modules";
+import { IReducerType } from "../../redux";
 
 class Gallery extends React.Component<IProps> {
   render() {
@@ -22,7 +21,7 @@ class Gallery extends React.Component<IProps> {
           style={styles.container}
           renderItem={({ item, index }) => (
             <TouchableHighlight style={styles.item} onPress={() => {}}>
-              <View>{item}</View>
+              <View>{item.imageComponent}</View>
             </TouchableHighlight>
           )}
           numColumns={2}
@@ -33,8 +32,8 @@ class Gallery extends React.Component<IProps> {
 }
 
 export const GalleryConnected = connect<IStateProps, IDispatchProps>(
-  (state: IRootReducer) => ({
-    images: state.gallery.images
+  (state: IReducerType) => ({
+    images: state.images
   }),
   dispatch => ({})
 )(Gallery);

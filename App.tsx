@@ -1,13 +1,12 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { createStore, Store } from "redux";
-import { rootReducer, IRootReducer } from "./modules";
+import { createStore } from "redux";
+import { reducer } from "./redux";
 import { Provider } from "react-redux";
 import { NativeRouter, Switch, Route } from "react-router-native";
 import { Gallery } from "./containers";
 //import { ROOT_INITIAL_STATE } from "./modules";
 
-const store = createStore(rootReducer);
+const store = createStore(reducer);
 
 store.subscribe(() => {
   console.log(store.getState());
