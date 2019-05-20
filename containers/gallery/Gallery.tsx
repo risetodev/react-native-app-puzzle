@@ -4,15 +4,52 @@ import {
   FlatList,
   Dimensions,
   TouchableHighlight,
-  View
+  View,
+  BackHandler,
+  Image,
+  ImageRequireSource
 } from "react-native";
+import { Asset } from "expo-asset";
 
+import { withRouter, RouteComponentProps } from "react-router";
 import { connect } from "react-redux";
-import { IDispatchProps, IProps, IStateProps } from "./types";
-import { IReducerType, IImage } from "../../redux";
+import { IProps, IStateProps, IDispatchProps } from "./types";
+import { IReducerType, onSelectImage } from "../../redux";
 import * as actions from "../../redux";
 
 class Gallery extends React.Component<IProps> {
+  state = {
+    imageToSlice: null
+  };
+
+  componentDidMount() {
+    BackHandler.addEventListener("hardwareBackPress", () =>
+      this.hardwareBackPressHandler()
+    );
+
+    // setTimeout(() => {
+    //   this.props.history.push("/puzzle");
+    // }, 0);
+  }
+  componentWillUnmount() {
+    BackHandler.removeEventListener("hardwareBackPress", () =>
+      this.hardwareBackPressHandler()
+    );
+  }
+
+  hardwareBackPressHandler = () => {
+    if (this.props.history.location.pathname === "/puzzle") {
+      this.props.history.goBack();
+      return true;
+    }
+    return false;
+  };
+
+  onSubmitImage = (image: ImageRequireSource) => () => {
+    this.props.onSelectImage(image);
+    this.props.history.push("/puzzle");
+  };
+
   render() {
     return (
       <>
@@ -23,9 +60,9 @@ class Gallery extends React.Component<IProps> {
           renderItem={({ item, index }) => (
             <TouchableHighlight
               style={styles.item}
-              onPress={() => this.props.onSelectImage(item.source)}
+              onPress={this.onSubmitImage(item.source)}
             >
-              <View>{item.imageComponent}</View>
+              <Image style={styles.item} source={item.source} />
             </TouchableHighlight>
           )}
           numColumns={2}
@@ -35,14 +72,16 @@ class Gallery extends React.Component<IProps> {
   }
 }
 
-export const GalleryConnected = connect<IStateProps, IDispatchProps>(
-  (state: IReducerType) => ({
-    images: state.images
-  }),
-  dispatch => ({
-    onSelectImage: (image: string) => dispatch(actions.onSelectImage(image))
-  })
-)(Gallery);
+export const GalleryConnected = withRouter<RouteComponentProps<{}>>(
+  connect<IStateProps, IDispatchProps>(
+    (state: IReducerType) => ({
+      images: state.images
+    }),
+    dispatch => ({
+      onSelectImage: uri => dispatch(onSelectImage(uri))
+    })
+  )(Gallery)
+);
 
 const styles = StyleSheet.create({
   container: {

@@ -38,3 +38,18 @@ export const Image9: React.ReactNode = (
 export const Image10: React.ReactNode = (
   <Image style={styles.item} source={require("../../assets/images/10.jpg")} />
 );
+export const Image11: React.ReactNode = (
+  <Image style={styles.item} source={require("../../assets/images/11.jpg")} />
+);
+export const Image12: React.ReactNode = (
+  <Image style={styles.item} source={require("../../assets/images/12.jpg")} />
+);
+export const Image13: React.ReactNode = (
+  <Image style={styles.item} source={require("../../assets/images/13.jpg")} />
+);
+export const Image14: React.ReactNode = (
+  <Image style={styles.item} source={require("../../assets/images/14.jpg")} />
+);
+export const Image15: React.ReactNode = (
+  <Image style={styles.item} source={require("../../assets/images/15.jpg")} />
+);

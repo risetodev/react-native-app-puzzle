@@ -1,9 +1,16 @@
 import { IImage } from "../../redux";
+import { RouteComponentProps } from "react-router";
+import { ImageRequireSource } from "react-native";
 
 export interface IStateProps {
   images: IImage[];
 }
+
 export interface IDispatchProps {
-  onSelectImage: (image: string) => void;
+  onSelectImage: (uri: ImageRequireSource) => void;
 }
-export interface IProps extends IDispatchProps, IStateProps {}
+
+export interface IProps
+  extends IDispatchProps,
+    IStateProps,
+    RouteComponentProps<{}> {}
