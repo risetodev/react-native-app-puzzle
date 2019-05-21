@@ -4,10 +4,10 @@ import {
   FlatList,
   Dimensions,
   TouchableHighlight,
-  View,
   BackHandler,
   Image,
-  ImageRequireSource
+  ImageRequireSource,
+  StatusBar
 } from "react-native";
 import { Asset } from "expo-asset";
 
@@ -53,6 +53,7 @@ class Gallery extends React.Component<IProps> {
   render() {
     return (
       <>
+        <StatusBar hidden={true} />
         <FlatList
           data={this.props.images}
           keyExtractor={(buf, i) => i.toString()}

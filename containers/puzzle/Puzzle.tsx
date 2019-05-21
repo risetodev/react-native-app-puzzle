@@ -8,13 +8,16 @@ import {
   StyleSheet,
   Image,
   PanResponder,
-  Animated
+  Animated,
+  Text,
+  ProgressBarAndroid,
+  StatusBar
 } from "react-native";
 import { FlatGrid } from "react-native-super-grid";
 import { IDispatchProps, IStateProps, IProps } from "./types";
 import { connect } from "react-redux";
 import { IReducerType } from "../../redux/types";
-
+import { shuffle } from "shuffle-array";
 class Puzzle extends React.Component<IProps> {
   state = {
     images: [
@@ -34,7 +37,7 @@ class Puzzle extends React.Component<IProps> {
       { img: require("../../assets/images/14.jpg") },
       { img: require("../../assets/images/15.jpg") }
     ],
-    board: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    board: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     slices: Array.from(Array(12)),
     ready: false,
     image: null,
@@ -43,9 +46,11 @@ class Puzzle extends React.Component<IProps> {
       height: null
     },
     isLoading: false,
+
+    imageSource: "4.jpg",
+
     pan: new Animated.ValueXY(),
-    scale: new Animated.Value(1),
-    imageSource: "4.jpg"
+    scale: new Animated.Value(1)
   };
 
   cropImage = async (originX, originY) => {
@@ -81,35 +86,14 @@ class Puzzle extends React.Component<IProps> {
   };
 
   componentDidMount() {
-    console.log(this.props.selectedImage);
-
     (async () => {
       await this.setState({ isLoading: true });
       const image = await Asset.fromModule(this.props.selectedImage);
-      // console.log(image);
-      // await Image.getSize(
-      //   image.uri,
-      //   (width, height) => {
-      //     console.log("width " + width);
-      //     console.log("height " + height);
-      //     this.setState({
-      //       imageSize: {
-      //         width,
-      //         height
-      //       }
-      //     });
-      //   },
-      //   error => {
-      //     console.log("Image size: " + error);
-      //   }
-      // );
       this.setState({
-        ready: true,
         image
       });
       Promise.all(this.getSlices()).then(res => {
         this.setState({ slices: res, isLoading: false });
-        console.log(this.state.slices);
       });
     })();
   }
@@ -167,64 +151,76 @@ class Puzzle extends React.Component<IProps> {
             <Image source={require("../../assets/images/4.jpg")} />
           </Animated.View>
         </View> */}
-        <View style={styles.container}>
-          {!this.state.isLoading && (
-            <View style={styles.board}>
-              <FlatGrid
-                itemContainerStyle={styles.item}
-                // fixed={true}
-                // spacing={1}
-                // itemDimension={100}
-                items={this.state.slices}
-                renderItem={({ item }) => (
-                  <Animated.View
-                    style={imageStyle}
-                    {...this._panResponder.panHandlers}
-                  >
-                    <Image style={styles.itemBoard} source={{ uri: item }} />
-                  </Animated.View>
-                )}
-              />
+
+        <StatusBar hidden={true} />
+        {!this.state.isLoading ? (
+          <View style={styles.container}>
+            <View style={styles.center}>
+              <View style={styles.board}>
+                <View style={{ flexDirection: "row" }}>
+                  <FlatList
+                    data={this.state.board}
+                    keyExtractor={(slices, index: number) => index.toString()}
+                    //style={{ backgroundColor: "red" }}
+                    renderItem={({ item, index }) => (
+                      <Animated.View
+                        style={imageStyle}
+                        {...this._panResponder.panHandlers}
+                      >
+                        <Image style={styles.item} source={item} />
+                      </Animated.View>
+                    )}
+                    numColumns={3}
+                    // horizontal={true}
+                    //showsHorizontalScrollIndicator={false}
+                  />
+                </View>
+              </View>
+              <View style={styles.sliders}>
+                <View>
+                  <FlatList
+                    data={this.state.slices}
+                    keyExtractor={(slices, index: number) => index.toString()}
+                    //style={{ backgroundColor: "red" }}
+                    renderItem={({ item, index }) => (
+                      <Image style={styles.item} source={{ uri: item }} />
+                    )}
+                    numColumns={6}
+                    // horizontal={true}
+                    //showsHorizontalScrollIndicator={false}
+                  />
+                  {/* <FlatList
+                    inverted={true}
+                    data={this.state.slices}
+                    keyExtractor={(buf, i) => i.toString()}
+                    //style={{ backgroundColor: "green" }}
+                    renderItem={({ item }) => (
+                      <TouchableHighlight style={styles.item}>
+                        <Image style={styles.item} source={{ uri: item }} />
+                      </TouchableHighlight>
+                    )}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                  /> */}
+                </View>
+              </View>
             </View>
-          )}
-          <View style={styles.sliders}>
-            <FlatList
-              data={this.state.images}
-              keyExtractor={(buf, i) => i.toString()}
-              //style={{ backgroundColor: "red" }}
-              renderItem={({ item }) => (
-                // <TouchableHighlight style={styles.item}>
-                <Animated.View
-                  style={imageStyle}
-                  {...this._panResponder.panHandlers}
-                >
-                  <Image style={styles.item} source={item.img} />
-                </Animated.View>
-                // </TouchableHighlight>
-              )}
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-            />
-            <FlatList
-              inverted={true}
-              data={this.state.images}
-              keyExtractor={(buf, i) => i.toString()}
-              //style={{ backgroundColor: "green" }}
-              renderItem={({ item }) => (
-                // <TouchableHighlight style={styles.item}>
-                <Animated.View
-                  style={imageStyle}
-                  {...this._panResponder.panHandlers}
-                >
-                  <Image style={styles.item} source={item.img} />
-                </Animated.View>
-                // </TouchableHighlight>
-              )}
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-            />
           </View>
-        </View>
+        ) : (
+          <View
+            style={{ flex: 1, alignItems: "stretch", backgroundColor: "black" }}
+          >
+            <View
+              style={{
+                paddingTop: Dimensions.get("window").height / 2,
+                paddingBottom: Dimensions.get("window").height / 2
+              }}
+            >
+              <ProgressBarAndroid styleAttr="Horizontal" color="blue" />
+              <ProgressBarAndroid styleAttr="Horizontal" color="yellow" />
+            </View>
+          </View>
+        )}
       </>
     );
   }
@@ -239,32 +235,40 @@ export const PuzzleConnected = connect<IStateProps, IDispatchProps>(
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "black"
   },
-  board: {
-    marginTop: Dimensions.get("window").height / 27,
-    height: Dimensions.get("window").height / 1.5
-  },
-  sliders: {
-    marginRight: 5,
-    marginLeft: 5,
-    marginBottom: 50
-  },
-  item: {
-    marginRight: 1,
-    marginLeft: 1,
-    marginBottom: 1,
-    marginTop: 1,
-    height: 100,
-    width: 100
-  },
-  row: {
+  center: {
+    // backgroundColor: "yellow",
     flex: 1,
+    alignItems: "center",
+    flexDirection: "column",
+    justifyContent: "space-around"
+  },
+
+  sliders: {
+    // backgroundColor: "red",
     flexDirection: "row"
   },
+  item: {
+    margin: 2,
+    height: 90,
+    width: 60
+  },
+  board: {
+    alignItems: "center",
+    justifyContent: "space-around"
+  },
   itemBoard: {
-    height: "100%",
-
-    resizeMode: "contain"
+    margin: 2,
+    height: 90,
+    width: 60,
+    backgroundColor: "white"
+  },
+  itemBoardImage: {
+    height: 90,
+    width: 60
   }
 });
