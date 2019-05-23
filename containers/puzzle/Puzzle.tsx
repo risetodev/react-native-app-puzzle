@@ -18,6 +18,8 @@ import { IDispatchProps, IStateProps, IProps } from "./types";
 import { connect } from "react-redux";
 import { IReducerType } from "../../redux/types";
 import { shuffle } from "shuffle-array";
+//import Draggable from "../../components/Draggable.js";
+import DragNDrop from "../../components/DragNDrop";
 class Puzzle extends React.Component<IProps> {
   state = {
     images: [
@@ -37,20 +39,29 @@ class Puzzle extends React.Component<IProps> {
       { img: require("../../assets/images/14.jpg") },
       { img: require("../../assets/images/15.jpg") }
     ],
-    board: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    board: [
+      "qwe",
+      "qwe",
+      "qwe",
+      "qwe",
+      "qwe",
+      "qwe",
+      "qwe",
+      "qwe",
+      "qwe",
+      "qwe",
+      "qwe",
+      "qwe"
+    ],
     slices: Array.from(Array(12)),
     ready: false,
     image: null,
-    imageSize: {
-      width: null,
-      height: null
-    },
+
     isLoading: false,
 
     imageSource: "4.jpg",
-
-    pan: new Animated.ValueXY(),
-    scale: new Animated.Value(1)
+    px: 0,
+    py: 0
   };
 
   cropImage = async (originX, originY) => {
@@ -98,110 +109,148 @@ class Puzzle extends React.Component<IProps> {
     })();
   }
 
-  componentWillMount() {
-    this._panResponder = PanResponder.create({
-      onMoveShouldSetResponderCapture: () => true,
-      onMoveShouldSetPanResponderCapture: () => true,
+  buf = null;
 
-      onPanResponderGrant: (e, gestureState) => {
-        // Set the initial value to the current state
-        this.state.pan.setOffset({
-          x: this.state.pan.x._value,
-          y: this.state.pan.y._value
-        });
-        this.state.pan.setValue({ x: 0, y: 0 });
-        Animated.spring(this.state.scale, {
-          toValue: 1.1,
-          friction: 3
-        }).start();
-      },
-
-      // When we drag/pan the object, set the delate to the states pan position
-      onPanResponderMove: Animated.event([
-        null,
-        { dx: this.state.pan.x, dy: this.state.pan.y }
-      ]),
-
-      onPanResponderRelease: (e, { vx, vy }) => {
-        // Flatten the offset to avoid erratic behavior
-        this.state.pan.flattenOffset();
-        Animated.spring(this.state.scale, { toValue: 1, friction: 3 }).start();
-      }
-    });
+  constructor(props) {
+    super(props);
+    this.buf = React.createRef();
   }
 
   render() {
-    // Destructure the value of pan from the state
-    let { pan, scale } = this.state;
-
-    // Calculate the x and y transform from the pan value
-    let [translateX, translateY] = [pan.x, pan.y];
-
-    let rotate = "0deg";
-
-    // Calculate the transform property and set it as a value for our style which we add below to the Animated.View component
-    let imageStyle = {
-      transform: [{ translateX }, { translateY }, { rotate }, { scale }]
-    };
+    // this.buf.measure((fx, fy, width, height, px, py) => {
+    //   console.log("Component width is: " + width);
+    //   console.log("Component height is: " + height);
+    //   console.log("X offset to frame: " + fx);
+    //   console.log("Y offset to frame: " + fy);
+    //   console.log("X offset to page: " + px);
+    //   console.log("Y offset to page: " + py);
+    // });
 
     return (
       <>
-        {/* <View style={styles.container}>
-          <Animated.View style={imageStyle} {...this._panResponder.panHandlers}>
-            <Image source={require("../../assets/images/4.jpg")} />
-          </Animated.View>
-        </View> */}
-
         <StatusBar hidden={true} />
         {!this.state.isLoading ? (
           <View style={styles.container}>
             <View style={styles.center}>
               <View style={styles.board}>
-                <View style={{ flexDirection: "row" }}>
-                  <FlatList
-                    data={this.state.board}
-                    keyExtractor={(slices, index: number) => index.toString()}
-                    //style={{ backgroundColor: "red" }}
-                    renderItem={({ item, index }) => (
-                      <Animated.View
-                        style={imageStyle}
-                        {...this._panResponder.panHandlers}
-                      >
-                        <Image style={styles.item} source={item} />
-                      </Animated.View>
-                    )}
-                    numColumns={3}
-                    // horizontal={true}
-                    //showsHorizontalScrollIndicator={false}
+                <View style={styles.lineInBoard}>
+                  <View style={styles.itemBoard} />
+                  <View style={styles.itemBoard} />
+                  <View style={styles.itemBoard} />
+                </View>
+                <View style={styles.lineInBoard}>
+                  <View style={styles.itemBoard} />
+                  <View style={styles.itemBoard} />
+                  <View style={styles.itemBoard} />
+                </View>
+                <View style={styles.lineInBoard}>
+                  <View style={styles.itemBoard} />
+                  <View style={styles.itemBoard} />
+                  <View style={styles.itemBoard} />
+                </View>
+                <View style={styles.lineInBoard}>
+                  <View style={styles.itemBoard} />
+                  <View style={styles.itemBoard} />
+                  <View
+                    ref={node => {
+                      this.buf = node;
+                    }}
+                    onLayout={({ nativeEvent }) => {
+                      if (this.buf) {
+                        this.buf.measure((fx, fy, width, height, px, py) => {
+                          console.log("Component width is: " + width);
+                          console.log("Component height is: " + height);
+                          console.log("X offset to frame: " + fx);
+                          console.log("Y offset to frame: " + px);
+
+                          console.log("Y offset to page: " + py);
+                          this.setState({
+                            px,
+                            py
+                          });
+                        });
+                      }
+                    }}
+                    style={styles.itemBoard}
                   />
                 </View>
               </View>
               <View style={styles.sliders}>
-                <View>
-                  <FlatList
-                    data={this.state.slices}
-                    keyExtractor={(slices, index: number) => index.toString()}
-                    //style={{ backgroundColor: "red" }}
-                    renderItem={({ item, index }) => (
-                      <Image style={styles.item} source={{ uri: item }} />
-                    )}
-                    numColumns={6}
-                    // horizontal={true}
-                    //showsHorizontalScrollIndicator={false}
-                  />
-                  {/* <FlatList
-                    inverted={true}
-                    data={this.state.slices}
-                    keyExtractor={(buf, i) => i.toString()}
-                    //style={{ backgroundColor: "green" }}
-                    renderItem={({ item }) => (
-                      <TouchableHighlight style={styles.item}>
-                        <Image style={styles.item} source={{ uri: item }} />
-                      </TouchableHighlight>
-                    )}
-                    horizontal={true}
-                    showsHorizontalScrollIndicator={false}
-                  /> */}
+                <View style={styles.lineInBoard}>
+                  <DragNDrop px={this.state.px} py={this.state.py}>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[0] }}
+                    />
+                  </DragNDrop>
+                  <DragNDrop>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[1] }}
+                    />
+                  </DragNDrop>
+                  <DragNDrop>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[2] }}
+                    />
+                  </DragNDrop>
+                  <DragNDrop>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[3] }}
+                    />
+                  </DragNDrop>
+                  <DragNDrop>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[4] }}
+                    />
+                  </DragNDrop>
+                  <DragNDrop>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[5] }}
+                    />
+                  </DragNDrop>
+                </View>
+                <View style={styles.lineInBoard}>
+                  <DragNDrop>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[6] }}
+                    />
+                  </DragNDrop>
+                  <DragNDrop>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[7] }}
+                    />
+                  </DragNDrop>
+                  <DragNDrop>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[8] }}
+                    />
+                  </DragNDrop>
+                  <DragNDrop>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[9] }}
+                    />
+                  </DragNDrop>
+                  <DragNDrop>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[10] }}
+                    />
+                  </DragNDrop>
+                  <DragNDrop>
+                    <Image
+                      style={styles.itemBoard}
+                      source={{ uri: this.state.slices[11] }}
+                    />
+                  </DragNDrop>
                 </View>
               </View>
             </View>
@@ -216,6 +265,8 @@ class Puzzle extends React.Component<IProps> {
                 paddingBottom: Dimensions.get("window").height / 2
               }}
             >
+              <ProgressBarAndroid styleAttr="Horizontal" color="white" />
+              <ProgressBarAndroid styleAttr="Horizontal" color="red" />
               <ProgressBarAndroid styleAttr="Horizontal" color="blue" />
               <ProgressBarAndroid styleAttr="Horizontal" color="yellow" />
             </View>
@@ -241,7 +292,6 @@ const styles = StyleSheet.create({
     backgroundColor: "black"
   },
   center: {
-    // backgroundColor: "yellow",
     flex: 1,
     alignItems: "center",
     flexDirection: "column",
@@ -249,8 +299,7 @@ const styles = StyleSheet.create({
   },
 
   sliders: {
-    // backgroundColor: "red",
-    flexDirection: "row"
+    flexDirection: "column"
   },
   item: {
     margin: 2,
@@ -258,8 +307,12 @@ const styles = StyleSheet.create({
     width: 60
   },
   board: {
+    // backgroundColor: "green",
     alignItems: "center",
     justifyContent: "space-around"
+  },
+  lineInBoard: {
+    flexDirection: "row"
   },
   itemBoard: {
     margin: 2,
