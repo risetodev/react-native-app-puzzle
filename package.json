@@ -16,16 +16,19 @@
     "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
     "react-native-cropimage": "^1.1.1",
     "react-native-drag-drop-and-swap": "^0.1.6",
+    "react-native-drag-sort": "^1.1.0",
     "react-native-draggable-flatlist": "^1.1.7",
     "react-native-image-resizer": "^1.0.1",
     "react-native-sortable-grid": "^2.0.0",
     "react-native-super-grid": "^3.0.4",
+    "react-native-vector-icons": "^6.4.2",
     "react-redux": "^6.0.0",
     "react-router-native": "^5.0.0",
     "redux": "^4.0.1",
     "shuffle-array": "^1.0.1",
     "typescript-fsa": "^3.0.0-beta-2",
-    "typescript-fsa-reducers": "^1.2.1"
+    "typescript-fsa-reducers": "^1.2.1",
+    "underscore": "^1.9.1"
   },
   "devDependencies": {
     "babel-preset-expo": "^5.0.0"

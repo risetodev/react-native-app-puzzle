@@ -46,16 +46,17 @@ export default class DragNDrop extends React.Component {
         { dx: this.state.pan.x, dy: this.state.pan.y }
       ]),
       onPanResponderRelease: (e, gesture) => {
-        // console.log(e);
-        // console.log("------------");
+        console.log(e);
+        console.log("------------");
+        console.log(e["touchHistory"].touchBank[0].startPageX);
 
-        // console.log(gesture);
+        //console.log(gesture);
 
         if (Math.abs(e.nativeEvent.pageX - gesture.moveX) <= 10) {
-          // console.log(e.nativeEvent.pageX);
-          // console.log("///////////////////////");
+          console.log(e.nativeEvent.pageX);
+          console.log("///////////////////////");
 
-          // console.log(gesture.moveX);
+          console.log(gesture.moveX);
           // console.log(
           //   this.props.px,
           //   this.props.px - Dimensions.get("window").width
@@ -67,8 +68,8 @@ export default class DragNDrop extends React.Component {
 
           Animated.spring(this.state.pan, {
             toValue: {
-              x: this.props.px,
-              y: this.props.py
+              x: e["touchHistory"].touchBank[0].startPageX,
+              y: -100
             }
           }).start();
         } else

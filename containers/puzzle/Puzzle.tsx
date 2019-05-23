@@ -19,49 +19,29 @@ import { connect } from "react-redux";
 import { IReducerType } from "../../redux/types";
 import { shuffle } from "shuffle-array";
 //import Draggable from "../../components/Draggable.js";
-import DragNDrop from "../../components/DragNDrop";
+//import DragNDrop from "../../components/DragNDrop";
+
+import _ from "underscore";
+
+import DragSortableView from "react-native-drag-sort";
+import Icon from "react-native-vector-icons/Ionicons";
+
+const childrenWidth = 108;
+const childrenHeight = 162;
 class Puzzle extends React.Component<IProps> {
   state = {
-    images: [
-      { img: require("../../assets/images/1.jpg") },
-      { img: require("../../assets/images/2.jpg") },
-      { img: require("../../assets/images/3.jpg") },
-      { img: require("../../assets/images/4.jpg") },
-      { img: require("../../assets/images/5.jpg") },
-      { img: require("../../assets/images/6.jpg") },
-      { img: require("../../assets/images/7.jpg") },
-      { img: require("../../assets/images/8.jpg") },
-      { img: require("../../assets/images/9.jpg") },
-      { img: require("../../assets/images/10.jpg") },
-      { img: require("../../assets/images/11.jpg") },
-      { img: require("../../assets/images/12.jpg") },
-      { img: require("../../assets/images/13.jpg") },
-      { img: require("../../assets/images/14.jpg") },
-      { img: require("../../assets/images/15.jpg") }
-    ],
-    board: [
-      "qwe",
-      "qwe",
-      "qwe",
-      "qwe",
-      "qwe",
-      "qwe",
-      "qwe",
-      "qwe",
-      "qwe",
-      "qwe",
-      "qwe",
-      "qwe"
-    ],
     slices: Array.from(Array(12)),
+    checkSlices: Array.from(Array(12)),
+    isWin: true,
     ready: false,
     image: null,
-
     isLoading: false,
-
-    imageSource: "4.jpg",
+    startTime: 0,
+    endTime: 0,
     px: 0,
-    py: 0
+    py: 0,
+    scrollEnabled: true,
+    isEnterEdit: false
   };
 
   cropImage = async (originX, originY) => {
@@ -104,10 +84,22 @@ class Puzzle extends React.Component<IProps> {
         image
       });
       Promise.all(this.getSlices()).then(res => {
-        this.setState({ slices: res, isLoading: false });
+        this.setState({
+          checkSlices: res
+        });
+        this.setState({
+          slices: this.state.checkSlices
+            .slice()
+            .sort(() => Math.random() - 0.5),
+          isLoading: false
+        });
       });
     })();
   }
+
+  getGameTime = () => {
+    return;
+  };
 
   buf = null;
 
@@ -117,15 +109,6 @@ class Puzzle extends React.Component<IProps> {
   }
 
   render() {
-    // this.buf.measure((fx, fy, width, height, px, py) => {
-    //   console.log("Component width is: " + width);
-    //   console.log("Component height is: " + height);
-    //   console.log("X offset to frame: " + fx);
-    //   console.log("Y offset to frame: " + fy);
-    //   console.log("X offset to page: " + px);
-    //   console.log("Y offset to page: " + py);
-    // });
-
     return (
       <>
         <StatusBar hidden={true} />
@@ -133,125 +116,72 @@ class Puzzle extends React.Component<IProps> {
           <View style={styles.container}>
             <View style={styles.center}>
               <View style={styles.board}>
-                <View style={styles.lineInBoard}>
-                  <View style={styles.itemBoard} />
-                  <View style={styles.itemBoard} />
-                  <View style={styles.itemBoard} />
-                </View>
-                <View style={styles.lineInBoard}>
-                  <View style={styles.itemBoard} />
-                  <View style={styles.itemBoard} />
-                  <View style={styles.itemBoard} />
-                </View>
-                <View style={styles.lineInBoard}>
-                  <View style={styles.itemBoard} />
-                  <View style={styles.itemBoard} />
-                  <View style={styles.itemBoard} />
-                </View>
-                <View style={styles.lineInBoard}>
-                  <View style={styles.itemBoard} />
-                  <View style={styles.itemBoard} />
+                {this.state.isWin ? (
                   <View
-                    ref={node => {
-                      this.buf = node;
+                    style={{
+                      backgroundColor: "black",
+                      flex: 1,
+                      alignItems: "center",
+                      flexDirection: "column",
+                      justifyContent: "space-around"
                     }}
-                    onLayout={({ nativeEvent }) => {
-                      if (this.buf) {
-                        this.buf.measure((fx, fy, width, height, px, py) => {
-                          console.log("Component width is: " + width);
-                          console.log("Component height is: " + height);
-                          console.log("X offset to frame: " + fx);
-                          console.log("Y offset to frame: " + px);
+                  >
+                    <View>
+                      <Text style={{ fontSize: 50, color: "white" }}>
+                        Well done!
+                      </Text>
+                    </View>
 
-                          console.log("Y offset to page: " + py);
-                          this.setState({
-                            px,
-                            py
-                          });
+                    <View>
+                      <Text style={{ fontSize: 50, color: "white" }}>
+                        {this.state.endTime - this.state.startTime} seconds
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  <DragSortableView
+                    dataSource={this.state.slices}
+                    parentWidth={(childrenWidth + 3) * 3}
+                    childrenWidth={childrenWidth + 3}
+                    childrenHeight={childrenHeight + 3}
+                    onDragStart={(startIndex, endIndex) => {
+                      if (!this.state.isEnterEdit) {
+                        this.setState({
+                          isEnterEdit: true
                         });
                       }
                     }}
-                    style={styles.itemBoard}
+                    onDataChange={slices => {
+                      _.isEqual(slices, this.state.checkSlices) &&
+                        this.setState({
+                          isWin: true,
+                          endTime: new Date().getSeconds()
+                        });
+
+                      // delete or add data to refresh
+                      // if (slices.length != this.state.slices.length) {
+                      //   this.setState({
+                      //     slices
+                      //   });
+                      // }
+                    }}
+                    renderItem={(item, index) => {
+                      // console.log(item, index);
+
+                      return (
+                        <View style={styles.itemBoard}>
+                          <Image
+                            style={styles.itemBoardImage}
+                            source={{ uri: item }}
+                          />
+                        </View>
+                      );
+                    }}
+                    {...this.setState({
+                      startTime: new Date().getSeconds()
+                    })}
                   />
-                </View>
-              </View>
-              <View style={styles.sliders}>
-                <View style={styles.lineInBoard}>
-                  <DragNDrop px={this.state.px} py={this.state.py}>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[0] }}
-                    />
-                  </DragNDrop>
-                  <DragNDrop>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[1] }}
-                    />
-                  </DragNDrop>
-                  <DragNDrop>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[2] }}
-                    />
-                  </DragNDrop>
-                  <DragNDrop>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[3] }}
-                    />
-                  </DragNDrop>
-                  <DragNDrop>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[4] }}
-                    />
-                  </DragNDrop>
-                  <DragNDrop>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[5] }}
-                    />
-                  </DragNDrop>
-                </View>
-                <View style={styles.lineInBoard}>
-                  <DragNDrop>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[6] }}
-                    />
-                  </DragNDrop>
-                  <DragNDrop>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[7] }}
-                    />
-                  </DragNDrop>
-                  <DragNDrop>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[8] }}
-                    />
-                  </DragNDrop>
-                  <DragNDrop>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[9] }}
-                    />
-                  </DragNDrop>
-                  <DragNDrop>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[10] }}
-                    />
-                  </DragNDrop>
-                  <DragNDrop>
-                    <Image
-                      style={styles.itemBoard}
-                      source={{ uri: this.state.slices[11] }}
-                    />
-                  </DragNDrop>
-                </View>
+                )}
               </View>
             </View>
           </View>
@@ -301,13 +231,13 @@ const styles = StyleSheet.create({
   sliders: {
     flexDirection: "column"
   },
-  item: {
-    margin: 2,
-    height: 90,
-    width: 60
-  },
+  // item: {
+  //   margin: 2,
+  //   height: 90,
+  //   width: 60
+  // },
   board: {
-    // backgroundColor: "green",
+    backgroundColor: "white",
     alignItems: "center",
     justifyContent: "space-around"
   },
@@ -315,13 +245,13 @@ const styles = StyleSheet.create({
     flexDirection: "row"
   },
   itemBoard: {
-    margin: 2,
-    height: 90,
-    width: 60,
-    backgroundColor: "white"
+    // margin: 2,
+    // height: 90,
+    // width: 60,
+    //backgroundColor: "grey"
   },
   itemBoardImage: {
-    height: 90,
-    width: 60
+    height: childrenHeight,
+    width: childrenWidth
   }
 });

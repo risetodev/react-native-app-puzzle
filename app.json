@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "puzzle",
-    "slug": "app",
+    "slug": "puzzle",
     "privacy": "public",
     "sdkVersion": "32.0.0",
     "platforms": [
@@ -24,6 +24,8 @@
     ],
     "ios": {
       "supportsTablet": true
-    }
+    },
+    "description": "This is the expo project - laboratory work in the Wrocław University of Science and Technology by subject \"Design responsive mobile applications\". Developed in React-Native framework",
+    "githubUrl": "https://github.com/RiseToDev/react-native-app-puzzle"
   }
 }
