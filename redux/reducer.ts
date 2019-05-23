@@ -17,8 +17,7 @@ export const INITIAL_STATE: IReducerType = {
     { source: require("../assets/images/11.jpg") },
     { source: require("../assets/images/12.jpg") },
     { source: require("../assets/images/13.jpg") },
-    { source: require("../assets/images/14.jpg") },
-    { source: require("../assets/images/15.jpg") }
+    { source: require("../assets/images/14.jpg") }
   ],
   selectedImage: null
 };

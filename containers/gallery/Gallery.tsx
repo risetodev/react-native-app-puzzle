@@ -7,7 +7,8 @@ import {
   BackHandler,
   Image,
   ImageRequireSource,
-  StatusBar
+  StatusBar,
+  View
 } from "react-native";
 import { Asset } from "expo-asset";
 
@@ -19,23 +20,32 @@ import * as actions from "../../redux";
 
 class Gallery extends React.Component<IProps> {
   state = {
-    imageToSlice: null
+    imageToSlice: null,
+    isLandscape: true,
+    vertical: 2,
+    horizontal: 3
   };
 
   componentDidMount() {
     BackHandler.addEventListener("hardwareBackPress", () =>
       this.hardwareBackPressHandler()
     );
-
-    // setTimeout(() => {
-    //   this.props.history.push("/puzzle");
-    // }, 0);
+    Dimensions.addEventListener("change", this.updateOrientation);
   }
   componentWillUnmount() {
     BackHandler.removeEventListener("hardwareBackPress", () =>
       this.hardwareBackPressHandler()
     );
+    this.updateOrientation();
+    Dimensions.removeEventListener("change", this.updateOrientation);
   }
+
+  updateOrientation = () => {
+    this.setState({
+      isLandscape:
+        Dimensions.get("window").height < Dimensions.get("window").width
+    });
+  };
 
   hardwareBackPressHandler = () => {
     if (this.props.history.location.pathname === "/puzzle") {
@@ -54,20 +64,24 @@ class Gallery extends React.Component<IProps> {
     return (
       <>
         <StatusBar hidden={true} />
-        <FlatList
-          data={this.props.images}
-          keyExtractor={(buf, i) => i.toString()}
-          style={styles.container}
-          renderItem={({ item, index }) => (
-            <TouchableHighlight
-              style={styles.item}
-              onPress={this.onSubmitImage(item.source)}
-            >
-              <Image style={styles.item} source={item.source} />
-            </TouchableHighlight>
-          )}
-          numColumns={2}
-        />
+        <View style={styles.container}>
+          <View style={styles.center} />
+          <FlatList
+            data={this.props.images}
+            keyExtractor={(buf, i) => i.toString()}
+            //style={styles.container}
+            renderItem={({ item, index }) => (
+              <TouchableHighlight
+                style={styles.item}
+                onPress={this.onSubmitImage(item.source)}
+              >
+                <Image style={styles.item} source={item.source} />
+              </TouchableHighlight>
+            )}
+            numColumns={this.state.isLandscape ? 3 : 2}
+            key={this.state.isLandscape ? "h" : "v"}
+          />
+        </View>
       </>
     );
   }
@@ -87,7 +101,15 @@ export const GalleryConnected = withRouter<RouteComponentProps<{}>>(
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "black"
+  },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    flexDirection: "column",
+    justifyContent: "space-around"
   },
   item: {
     marginBottom: 1,

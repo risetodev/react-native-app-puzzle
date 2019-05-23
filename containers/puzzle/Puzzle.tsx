@@ -24,15 +24,16 @@ import { shuffle } from "shuffle-array";
 import _ from "underscore";
 
 import DragSortableView from "react-native-drag-sort";
-import Icon from "react-native-vector-icons/Ionicons";
 
 const childrenWidth = 108;
 const childrenHeight = 162;
+const childrenWidthLandscape = 60;
+const childrenHeightLandscape = 90;
 class Puzzle extends React.Component<IProps> {
   state = {
     slices: Array.from(Array(12)),
     checkSlices: Array.from(Array(12)),
-    isWin: true,
+    isWin: false,
     ready: false,
     image: null,
     isLoading: false,
@@ -40,8 +41,23 @@ class Puzzle extends React.Component<IProps> {
     endTime: 0,
     px: 0,
     py: 0,
-    scrollEnabled: true,
-    isEnterEdit: false
+    isEnterEdit: false,
+    isLandscape: false
+  };
+
+  componentWillMount() {
+    this.updateOrientation();
+  }
+
+  componentWillUnmount() {
+    Dimensions.removeEventListener("change", this.updateOrientation);
+  }
+
+  updateOrientation = () => {
+    this.setState({
+      isLandscape:
+        Dimensions.get("window").height < Dimensions.get("window").width
+    });
   };
 
   cropImage = async (originX, originY) => {
@@ -77,6 +93,7 @@ class Puzzle extends React.Component<IProps> {
   };
 
   componentDidMount() {
+    Dimensions.addEventListener("change", this.updateOrientation);
     (async () => {
       await this.setState({ isLoading: true });
       const image = await Asset.fromModule(this.props.selectedImage);
@@ -91,15 +108,19 @@ class Puzzle extends React.Component<IProps> {
           slices: this.state.checkSlices
             .slice()
             .sort(() => Math.random() - 0.5),
-          isLoading: false
+          isLoading: false,
+          startTime: new Date().getTime(),
+          isWin: false,
+          ready: false,
+          image: null,
+          endTime: 0,
+          px: 0,
+          py: 0,
+          isEnterEdit: false
         });
       });
     })();
   }
-
-  getGameTime = () => {
-    return;
-  };
 
   buf = null;
 
@@ -115,74 +136,145 @@ class Puzzle extends React.Component<IProps> {
         {!this.state.isLoading ? (
           <View style={styles.container}>
             <View style={styles.center}>
-              <View style={styles.board}>
-                {this.state.isWin ? (
-                  <View
-                    style={{
-                      backgroundColor: "black",
-                      flex: 1,
-                      alignItems: "center",
-                      flexDirection: "column",
-                      justifyContent: "space-around"
-                    }}
-                  >
-                    <View>
-                      <Text style={{ fontSize: 50, color: "white" }}>
-                        Well done!
-                      </Text>
+              {this.state.isLandscape ? (
+                <View style={styles.board}>
+                  {this.state.isWin ? (
+                    <View
+                      style={{
+                        backgroundColor: "black",
+                        flex: 1,
+                        alignItems: "center",
+                        flexDirection: "column",
+                        justifyContent: "space-around"
+                      }}
+                    >
+                      <View>
+                        <Text style={{ fontSize: 50, color: "white" }}>
+                          Well done!
+                        </Text>
+                      </View>
+
+                      <View>
+                        <Text style={{ fontSize: 50, color: "white" }}>
+                          {Math.abs(this.state.startTime - this.state.endTime) /
+                            1000}{" "}
+                          seconds
+                        </Text>
+                      </View>
                     </View>
+                  ) : (
+                    <DragSortableView
+                      dataSource={this.state.slices}
+                      parentWidth={(childrenWidthLandscape + 3) * 3}
+                      childrenWidth={childrenWidthLandscape + 3}
+                      childrenHeight={childrenHeightLandscape + 3}
+                      onDragStart={(startIndex, endIndex) => {
+                        if (!this.state.isEnterEdit) {
+                          this.setState({
+                            isEnterEdit: true
+                          });
+                        }
+                      }}
+                      onDataChange={slices => {
+                        _.isEqual(slices, this.state.checkSlices) &&
+                          this.setState({
+                            isWin: true,
+                            endTime: new Date().getTime()
+                          });
 
-                    <View>
-                      <Text style={{ fontSize: 50, color: "white" }}>
-                        {this.state.endTime - this.state.startTime} seconds
-                      </Text>
+                        // delete or add data to refresh
+                        // if (slices.length != this.state.slices.length) {
+                        //   this.setState({
+                        //     slices
+                        //   });
+                        // }
+                      }}
+                      key={this.state.isLandscape ? "h" : "v"}
+                      renderItem={(item, index) => {
+                        // console.log(item, index);
+
+                        return (
+                          <View style={styles.itemBoard}>
+                            <Image
+                              style={styles.itemBoardImageLanscape}
+                              source={{ uri: item }}
+                            />
+                          </View>
+                        );
+                      }}
+                    />
+                  )}
+                </View>
+              ) : (
+                <View style={styles.board}>
+                  {this.state.isWin ? (
+                    <View
+                      style={{
+                        backgroundColor: "black",
+                        flex: 1,
+                        alignItems: "center",
+                        flexDirection: "column",
+                        justifyContent: "space-around"
+                      }}
+                    >
+                      <View>
+                        <Text style={{ fontSize: 50, color: "white" }}>
+                          Well done!
+                        </Text>
+                      </View>
+
+                      <View>
+                        <Text style={{ fontSize: 50, color: "white" }}>
+                          {Math.abs(this.state.startTime - this.state.endTime) /
+                            1000}{" "}
+                          seconds
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                ) : (
-                  <DragSortableView
-                    dataSource={this.state.slices}
-                    parentWidth={(childrenWidth + 3) * 3}
-                    childrenWidth={childrenWidth + 3}
-                    childrenHeight={childrenHeight + 3}
-                    onDragStart={(startIndex, endIndex) => {
-                      if (!this.state.isEnterEdit) {
-                        this.setState({
-                          isEnterEdit: true
-                        });
-                      }
-                    }}
-                    onDataChange={slices => {
-                      _.isEqual(slices, this.state.checkSlices) &&
-                        this.setState({
-                          isWin: true,
-                          endTime: new Date().getSeconds()
-                        });
+                  ) : (
+                    <DragSortableView
+                      dataSource={this.state.slices}
+                      parentWidth={(childrenWidth + 3) * 3}
+                      childrenWidth={childrenWidth + 3}
+                      childrenHeight={childrenHeight + 3}
+                      onDragStart={(startIndex, endIndex) => {
+                        if (!this.state.isEnterEdit) {
+                          this.setState({
+                            isEnterEdit: true
+                          });
+                        }
+                      }}
+                      onDataChange={slices => {
+                        _.isEqual(slices, this.state.checkSlices) &&
+                          this.setState({
+                            isWin: true,
+                            endTime: new Date().getTime()
+                          });
 
-                      // delete or add data to refresh
-                      // if (slices.length != this.state.slices.length) {
-                      //   this.setState({
-                      //     slices
-                      //   });
-                      // }
-                    }}
-                    renderItem={(item, index) => {
-                      // console.log(item, index);
+                        // delete or add data to refresh
+                        // if (slices.length != this.state.slices.length) {
+                        //   this.setState({
+                        //     slices
+                        //   });
+                        // }
+                      }}
+                      key={this.state.isLandscape ? "h" : "v"}
+                      renderItem={(item, index) => {
+                        // console.log(item, index);
 
-                      return (
-                        <View style={styles.itemBoard}>
-                          <Image
-                            style={styles.itemBoardImage}
-                            source={{ uri: item }}
-                          />
-                        </View>
-                      );
-                    }}
-                    {...this.setState({
-                      startTime: new Date().getSeconds()
-                    })}
-                  />
-                )}
-              </View>
+                        return (
+                          <View style={styles.itemBoard}>
+                            <Image
+                              style={styles.itemBoardImage}
+                              source={{ uri: item }}
+                            />
+                          </View>
+                        );
+                      }}
+                    />
+                  )}
+                </View>
+              )}
             </View>
           </View>
         ) : (
@@ -191,8 +283,7 @@ class Puzzle extends React.Component<IProps> {
           >
             <View
               style={{
-                paddingTop: Dimensions.get("window").height / 2,
-                paddingBottom: Dimensions.get("window").height / 2
+                paddingTop: Dimensions.get("window").height / 2
               }}
             >
               <ProgressBarAndroid styleAttr="Horizontal" color="white" />
@@ -231,11 +322,7 @@ const styles = StyleSheet.create({
   sliders: {
     flexDirection: "column"
   },
-  // item: {
-  //   margin: 2,
-  //   height: 90,
-  //   width: 60
-  // },
+
   board: {
     backgroundColor: "white",
     alignItems: "center",
@@ -253,5 +340,9 @@ const styles = StyleSheet.create({
   itemBoardImage: {
     height: childrenHeight,
     width: childrenWidth
+  },
+  itemBoardImageLanscape: {
+    height: childrenHeightLandscape,
+    width: childrenWidthLandscape
   }
 });

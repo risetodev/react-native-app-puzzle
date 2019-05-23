@@ -4,17 +4,11 @@ import { reducer } from "./redux";
 import { Provider } from "react-redux";
 import { NativeRouter, Switch, Route } from "react-router-native";
 import { Gallery, Puzzle } from "./containers";
-
-//import { ROOT_INITIAL_STATE } from "./modules";
+import { ScreenOrientation } from "expo";
 
 const store = createStore(reducer);
 
-// store.subscribe(() => {
-//   console.log(store.getState());
-// });
-
-// console.log(store.getState());
-
+ScreenOrientation.allowAsync(ScreenOrientation.Orientation.ALL_BUT_UPSIDE_DOWN);
 class App extends React.Component {
   render() {
     return (

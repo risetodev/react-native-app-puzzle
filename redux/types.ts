@@ -1,4 +1,3 @@
-import React from "react";
 import { ImageRequireSource } from "react-native";
 
 export interface IReducerType {
